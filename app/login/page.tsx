@@ -58,23 +58,23 @@ export default function LoginPage() {
     return () => subscription.unsubscribe();
   }, [router]);
 
- async function login() {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com";
+  async function login() {
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com";
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${siteUrl}/auth/callback`,
-    },
-  });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${siteUrl}/auth/callback`,
+      },
+    });
 
-  if (error) {
-    setMessage(error.message);
-  } else {
-    setMessage(t.checkEmailForLogin);
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage(t.checkEmailForLogin);
+    }
   }
-}
 
   return (
     <div className="page-shell">
@@ -95,6 +95,26 @@ export default function LoginPage() {
           />
 
           <button onClick={login}>{t.sendLoginLink}</button>
+
+          <button
+            onClick={async () => {
+              const siteUrl =
+                process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com";
+
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${siteUrl}/auth/callback`,
+                },
+              });
+
+              if (error) {
+                setMessage(error.message);
+              }
+            }}
+          >
+            Continue with Google
+          </button>
 
           <p className="muted">{message}</p>
         </div>
