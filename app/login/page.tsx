@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  // 🔥 prevents multiple redirects
   const hasRedirected = useRef(false);
 
   useEffect(() => {
@@ -45,7 +44,6 @@ export default function LoginPage() {
       if (!session || hasRedirected.current) return;
 
       const profile = await getMyProfile();
-
       if (!profile) return;
 
       hasRedirected.current = true;
@@ -61,10 +59,13 @@ export default function LoginPage() {
   }, [router]);
 
   async function login() {
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com/auth/callback";
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: "https://crewtraxk.com/login/callback",
+        emailRedirectTo: `${siteUrl}/auth/callback`,
       },
     });
 
