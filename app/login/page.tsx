@@ -64,7 +64,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: "http://localhost:3000/auth/callback",
+        emailRedirectTo: "https://crewtraxk.com/login/callback",
       },
     });
 
