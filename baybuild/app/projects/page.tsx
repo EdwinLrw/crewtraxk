@@ -33,9 +33,14 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     async function load() {
-      const data = await getProjects();
-      setProjects(data);
-      setLoading(false);
+      try {
+        const data = await getProjects();
+        setProjects(data as ProjectRow[]);
+      } catch (error) {
+        console.error("Failed to load projects:", error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     load();
@@ -44,29 +49,33 @@ export default function ProjectsPage() {
   async function handleAddProject() {
     if (!form.name.trim()) return;
 
-    const created = await addProject({
-      name: form.name,
-      address: form.address,
-      client: form.client,
-      start_date: form.startDate,
-      status: form.status,
-      contract_value: Number(form.contractValue || 0),
-      budget_total: Number(form.budgetTotal || 0),
-      approved_change_orders: Number(form.approvedChangeOrders || 0),
-    });
+    try {
+      const created = await addProject({
+        name: form.name.trim(),
+        address: form.address.trim(),
+        client: form.client.trim(),
+        start_date: form.startDate,
+        status: form.status,
+        contract_value: Number(form.contractValue || 0),
+        budget_total: Number(form.budgetTotal || 0),
+        approved_change_orders: Number(form.approvedChangeOrders || 0),
+      });
 
-    setProjects((prev) => [created, ...prev]);
+      setProjects((prev) => [created as ProjectRow, ...prev]);
 
-    setForm({
-      name: "",
-      address: "",
-      client: "",
-      startDate: "",
-      status: "Active",
-      contractValue: "",
-      budgetTotal: "",
-      approvedChangeOrders: "",
-    });
+      setForm({
+        name: "",
+        address: "",
+        client: "",
+        startDate: "",
+        status: "Active",
+        contractValue: "",
+        budgetTotal: "",
+        approvedChangeOrders: "",
+      });
+    } catch (error) {
+      console.error("Failed to add project:", error);
+    }
   }
 
   if (loading) {
@@ -106,7 +115,9 @@ export default function ProjectsPage() {
           <input
             placeholder="Contract value"
             value={form.contractValue}
-            onChange={(e) => setForm({ ...form, contractValue: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, contractValue: e.target.value })
+            }
           />
           <input
             placeholder="Budget total"
@@ -129,7 +140,11 @@ export default function ProjectsPage() {
 
       <div className="list">
         {projects.map((project) => (
-          <Link key={project.id} href={`/projects/${project.id}`} className="card">
+          <Link
+            key={project.id}
+            href={`/projects/${project.id}`}
+            className="card"
+          >
             <div className="stack">
               <strong>{project.name}</strong>
               <div>Client: {project.client || "-"}</div>
@@ -140,5 +155,5 @@ export default function ProjectsPage() {
         ))}
       </div>
     </main>
-  )
-    }
+  );
+}
