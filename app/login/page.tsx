@@ -58,23 +58,23 @@ export default function LoginPage() {
     return () => subscription.unsubscribe();
   }, [router]);
 
-  async function login() {
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com/auth/callback";
+ async function login() {
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com";
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${siteUrl}/auth/callback`,
-      },
-    });
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/callback`,
+    },
+  });
 
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage(t.checkEmailForLogin);
-    }
+  if (error) {
+    setMessage(error.message);
+  } else {
+    setMessage(t.checkEmailForLogin);
   }
+}
 
   return (
     <div className="page-shell">
