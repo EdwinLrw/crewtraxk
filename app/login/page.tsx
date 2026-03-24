@@ -17,6 +17,43 @@ export default function LoginPage() {
 
   const hasRedirected = useRef(false);
 
+  const tx = t as Record<string, string | undefined>;
+
+  const copy = {
+    badge: tx.appName || "CrewTraxk",
+    heroTitle: tx.loginHeroTitle || "Run your crew with confidence",
+    heroSubtitle:
+      tx.loginHeroSubtitle ||
+      "Login for daily reports, worker tools, job tracking, payroll-ready time entries, invoices, and inspections.",
+    feature1:
+      tx.loginFeature1 || "Fast access with Google or secure email login links",
+    feature2:
+      tx.loginFeature2 ||
+      "Admin dashboards for jobs, reports, and crew management",
+    feature3:
+      tx.loginFeature3 ||
+      "Built for field teams, office teams, and subcontractors",
+    formTitle: tx.login || "Login",
+    formSubtitle:
+      tx.loginFormSubtitle ||
+      "Sign in with Google or get a secure login link by email.",
+    email: tx.email || "Email",
+    emailPlaceholder: tx.emailPlaceholder || "name@company.com",
+    sendLoginLink: tx.sendLoginLink || "Send login link",
+    sendingLoginLink: tx.sendingLoginLink || "Sending login link...",
+    orContinueWith: tx.orContinueWith || "OR CONTINUE WITH",
+    google: tx.google || "Google",
+    openingGoogle: tx.openingGoogle || "Opening Google...",
+    newCompany: tx.newCompany || "New company?",
+    newCompanyText:
+      tx.newCompanyText ||
+      "Start with a trial and set up your crew, jobs, and admin access.",
+    startFreeTrial: tx.startFreeTrial || "Start free trial",
+    enterEmail: tx.enterEmail || "Please enter your email.",
+    checkEmailForLogin:
+      tx.checkEmailForLogin || "Check your email for your login link.",
+  };
+
   useEffect(() => {
     const handleUser = async () => {
       if (hasRedirected.current) return;
@@ -46,7 +83,12 @@ export default function LoginPage() {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!session || hasRedirected.current) return;
 
-      const profile = await getMyProfile();
+      let profile = await getMyProfile();
+
+      if (!profile) {
+        profile = await ensureProfile();
+      }
+
       if (!profile) return;
 
       hasRedirected.current = true;
@@ -65,7 +107,7 @@ export default function LoginPage() {
     setMessage("");
 
     if (!email.trim()) {
-      setMessage("Please enter your email.");
+      setMessage(copy.enterEmail);
       return;
     }
 
@@ -75,7 +117,7 @@ export default function LoginPage() {
       process.env.NEXT_PUBLIC_SITE_URL || "https://crewtraxk.com";
 
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: email.trim(),
       options: {
         emailRedirectTo: `${siteUrl}/auth/callback`,
       },
@@ -84,7 +126,7 @@ export default function LoginPage() {
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage(t.checkEmailForLogin);
+      setMessage(copy.checkEmailForLogin);
     }
 
     setLoadingEmail(false);
@@ -110,16 +152,8 @@ export default function LoginPage() {
     }
   }
 
-  function handleAppleClick() {
-    setMessage("Apple login UI is ready. We can connect it next.");
-  }
-
-  function handlePhoneClick() {
-    setMessage("Phone login UI is ready. We can connect SMS code login next.");
-  }
-
   function handleTrialClick() {
-    setMessage("Trial / paid signup UI is ready. We can connect plans and checkout next.");
+    router.push("/pricing");
   }
 
   return (
@@ -128,48 +162,43 @@ export default function LoginPage() {
         <div className="auth-card-pro">
           <div className="auth-grid">
             <section className="auth-brand-panel">
-              <div className="auth-badge">CrewTraxk</div>
+              <div className="auth-badge">{copy.badge}</div>
 
-              <h1 className="auth-title-pro">Run your crew with confidence</h1>
+              <h1 className="auth-title-pro">{copy.heroTitle}</h1>
 
-              <p className="auth-subtitle-pro">
-                Login for daily reports, worker tools, job tracking, payroll-ready time
-                entries, invoices, and inspections.
-              </p>
+              <p className="auth-subtitle-pro">{copy.heroSubtitle}</p>
 
               <div className="auth-feature-list">
                 <div className="auth-feature-item">
                   <span className="auth-feature-dot" />
-                  <span>Fast worker access from phone or email</span>
+                  <span>{copy.feature1}</span>
                 </div>
                 <div className="auth-feature-item">
                   <span className="auth-feature-dot" />
-                  <span>Admin dashboards for jobs, reports, and crew management</span>
+                  <span>{copy.feature2}</span>
                 </div>
                 <div className="auth-feature-item">
                   <span className="auth-feature-dot" />
-                  <span>Built for field teams, office teams, and subcontractors</span>
+                  <span>{copy.feature3}</span>
                 </div>
               </div>
             </section>
 
             <section className="auth-form-panel">
               <div className="auth-top">
-                <h2 className="auth-form-title">{t.login}</h2>
-                <p className="auth-form-subtitle">
-                  Choose the sign-in method that works best for you.
-                </p>
+                <h2 className="auth-form-title">{copy.formTitle}</h2>
+                <p className="auth-form-subtitle">{copy.formSubtitle}</p>
               </div>
 
               <div className="auth-form-stack">
-                <label className="auth-label">{t.email}</label>
+                <label className="auth-label">{copy.email}</label>
 
                 <input
                   className="auth-input-pro"
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="name@company.com"
+                  placeholder={copy.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -179,11 +208,11 @@ export default function LoginPage() {
                   onClick={loginWithEmail}
                   disabled={loadingEmail || loadingGoogle}
                 >
-                  {loadingEmail ? "Sending login link..." : t.sendLoginLink}
+                  {loadingEmail ? copy.sendingLoginLink : copy.sendLoginLink}
                 </button>
 
                 <div className="auth-divider">
-                  <span>OR CONTINUE WITH</span>
+                  <span>{copy.orContinueWith}</span>
                 </div>
 
                 <div className="auth-alt-grid">
@@ -215,43 +244,7 @@ export default function LoginPage() {
                         d="M43.611 20.083H42V20H24v8h11.303a12.05 12.05 0 01-4.084 5.565l.003-.002 6.19 5.238C36.972 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
                       />
                     </svg>
-                    <span>{loadingGoogle ? "Opening Google..." : "Google"}</span>
-                  </button>
-
-                  <button className="btn-social-pro btn-dark-pro" onClick={handleAppleClick}>
-                    <svg
-                      className="auth-icon"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M16.365 1.43c0 1.14-.466 2.23-1.212 3.028-.84.902-2.212 1.596-3.417 1.5-.15-1.08.39-2.238 1.11-3 .78-.84 2.13-1.44 3.519-1.528zm4.26 16.146c-.54 1.236-.81 1.788-1.5 2.844-.96 1.47-2.31 3.312-3.984 3.324-1.488.012-1.872-.96-3.888-.948-2.016.012-2.436.966-3.924.954-1.674-.012-2.952-1.68-3.912-3.15-2.688-4.122-2.976-8.952-1.314-11.508 1.182-1.824 3.048-2.892 4.8-2.892 1.782 0 2.904.972 4.374.972 1.428 0 2.298-.972 4.362-.972 1.56 0 3.21.846 4.392 2.31-3.858 2.118-3.234 7.632.594 9.066z" />
-                    </svg>
-                    <span>Apple</span>
-                  </button>
-
-                  <button className="btn-social-pro" onClick={handlePhoneClick}>
-                    <svg
-                      className="auth-icon"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                      />
-                      <path
-                        d="M10 18h4"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span>Phone</span>
+                    <span>{loadingGoogle ? copy.openingGoogle : copy.google}</span>
                   </button>
                 </div>
 
@@ -261,14 +254,12 @@ export default function LoginPage() {
 
                 <div className="auth-trial-box">
                   <div className="auth-trial-copy">
-                    <h3>New company?</h3>
-                    <p>
-                      Start with a trial and set up your crew, jobs, and admin access.
-                    </p>
+                    <h3>{copy.newCompany}</h3>
+                    <p>{copy.newCompanyText}</p>
                   </div>
 
                   <button className="btn-secondary-pro" onClick={handleTrialClick}>
-                    Start free trial
+                    {copy.startFreeTrial}
                   </button>
                 </div>
               </div>

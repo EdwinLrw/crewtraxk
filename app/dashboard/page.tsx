@@ -1,87 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
-import { ensureProfile } from "@/app/lib/profile";
+import { ensureProfile, type Profile } from "@/app/lib/profile";
+import { useLanguage } from "@/app/lib/useLanguage";
 
-type FinancialMetrics = {
-  activeProjects: number;
-  totalContractValue: number;
-  paymentsReceived: number;
-  remainingToCollect: number;
-  materialSpend: number;
-  laborSpend: number;
-  subcontractorSpend: number;
-  miscSpend: number;
-  totalSpent: number;
-  projectedProfit: number;
-  grossMargin: number;
+type DashboardStats = {
+  workers: number;
+  jobs: number;
+  invoicesOpen: number;
+  projects: number;
+  paymentRequests: number;
+  subcontractorIssues: number;
 };
 
-type ProjectRow = {
-  id: string;
-  name: string;
-  client: string | null;
-  status: string | null;
-  projectValue: number;
-  paymentsReceived: number;
-  materialsSpent: number;
-  laborSpent: number;
-  subcontractorSpent: number;
-  miscSpent: number;
-  totalSpent: number;
-  remainingToCollect: number;
-  remainingBudget: number;
-  projectedProfit: number;
-  grossMargin: number;
-};
-
-const quickLinks = [
-  { href: "/projects", label: "Projects" },
-  { href: "/jobs", label: "Jobs" },
-  { href: "/workers", label: "Workers" },
-  { href: "/clock", label: "Clock In / Out" },
-  { href: "/reports", label: "Reports" },
-  { href: "/invoices", label: "Invoices" },
-  { href: "/inspections", label: "Inspections" },
-  { href: "/subcontractors", label: "Subcontractors" },
-  { href: "/payroll", label: "Payroll" },
-  { href: "/calendar", label: "Calendar" },
-];
-
-function money(value: number) {
-  return `$${Number(value || 0).toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })}`;
-}
-
-function badgeClass(status: string | null) {
-  const value = (status || "").toLowerCase();
-
-  if (value === "completed") return "badge success";
-  if (value === "delayed" || value === "behind") return "badge danger";
-  return "badge";
+function safeCount(value: number | null | undefined) {
+  return Number(value || 0);
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
+  const tx = t as Record<string, string | undefined>;
+
   const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState("");
-  const [metrics, setMetrics] = useState<FinancialMetrics>({
-    activeProjects: 0,
-    totalContractValue: 0,
-    paymentsReceived: 0,
-    remainingToCollect: 0,
-    materialSpend: 0,
-    laborSpend: 0,
-    subcontractorSpend: 0,
-    miscSpend: 0,
-    totalSpent: 0,
-    projectedProfit: 0,
-    grossMargin: 0,
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    workers: 0,
+    jobs: 0,
+    invoicesOpen: 0,
+    projects: 0,
+    paymentRequests: 0,
+    subcontractorIssues: 0,
   });
-  const [projects, setProjects] = useState<ProjectRow[]>([]);
+
+  const copy = useMemo(
+    () => ({
+      title: tx.dashboard || "Dashboard",
+      welcome: tx.dashboardWelcome || "Welcome back",
+      subtitle:
+        tx.dashboardSubtitle ||
+        "Track your crew, jobs, invoices, reports, and operations from one place.",
+      teamOverview: tx.teamOverview || "Team Overview",
+      operationsOverview: tx.operationsOverview || "Operations Overview",
+      quickActions: tx.quickActions || "Quick Actions",
+      recentSetup: tx.recentSetup || "Next Best Steps",
+      workers: tx.workers || "Workers",
+      jobs: tx.jobs || "Jobs",
+      projects: tx.projects || "Projects",
+      invoices: tx.invoices || "Invoices",
+      paymentRequests: tx.paymentRequests || "Payment Requests",
+      subcontractorIssues: tx.subcontractorIssues || "Compliance Issues",
+      open: tx.open || "Open",
+      manageWorkers: tx.manageWorkers || "Manage workers",
+      manageJobs: tx.manageJobs || "Manage jobs",
+      reviewInvoices: tx.reviewInvoices || "Review invoices",
+      openProjects: tx.openProjects || "Open projects",
+      paymentApprovals: tx.paymentApprovals || "Payment approvals",
+      subcontractorCompliance:
+        tx.subcontractorCompliance || "Subcontractor compliance",
+      adminCenter: tx.adminCenter || "Admin Center",
+      payrollArea: tx.payrollArea || "Payroll area",
+      reportsArea: tx.reportsArea || "Reports area",
+      workerArea: tx.workerArea || "Worker view",
+      companySetup: tx.companySetup || "Company setup",
+      companySetupText:
+        tx.companySetupText ||
+        "Add workers, create jobs, and start using reports and payroll tools.",
+      roleLabel: tx.role || "Role",
+      companyLabel: tx.company || "Company",
+      logout: tx.logout || "Logout",
+      loading: tx.loading || "Loading...",
+      loggedInAs: tx.loggedInAs || "Logged in as",
+      noRole: tx.noRole || "No role",
+      noCompany: tx.noCompany || "No company",
+    }),
+    [tx]
+  );
 
   useEffect(() => {
     async function loadDashboard() {
@@ -94,25 +89,40 @@ export default function DashboardPage() {
         return;
       }
 
-      const profile = await ensureProfile();
+      const myProfile = await ensureProfile();
 
-      if (!profile || !["owner", "admin", "supervisor"].includes(profile.role)) {
-        window.location.href = "/worker";
+      if (!myProfile) {
+        window.location.href = "/login";
         return;
       }
 
-      setUserEmail(user.email || "");
+      setProfile(myProfile);
 
-      const { getFinancialDashboardMetrics, getProjectFinancialRows } =
-        await import("@/app/lib/projects-db");
-
-      const [dashboardMetrics, projectRows] = await Promise.all([
-        getFinancialDashboardMetrics(),
-        getProjectFinancialRows(),
+      const [
+        workersRes,
+        jobsRes,
+        invoicesRes,
+        projectsRes,
+        paymentRequestsRes,
+        subcontractorsRes,
+      ] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "worker"),
+        supabase.from("jobs").select("id", { count: "exact", head: true }),
+        supabase.from("invoices").select("id", { count: "exact", head: true }).neq("status", "paid"),
+        supabase.from("projects").select("id", { count: "exact", head: true }),
+        supabase.from("payment_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("subcontractors").select("id", { count: "exact", head: true }).or("w9_on_file.eq.false,insurance_on_file.eq.false"),
       ]);
 
-      setMetrics(dashboardMetrics);
-      setProjects(projectRows);
+      setStats({
+        workers: safeCount(workersRes.count),
+        jobs: safeCount(jobsRes.count),
+        invoicesOpen: safeCount(invoicesRes.count),
+        projects: safeCount(projectsRes.count),
+        paymentRequests: safeCount(paymentRequestsRes.count),
+        subcontractorIssues: safeCount(subcontractorsRes.count),
+      });
+
       setLoading(false);
     }
 
@@ -128,7 +138,7 @@ export default function DashboardPage() {
     return (
       <div className="page-shell">
         <main className="page">
-          <div className="card">Loading dashboard.</div>
+          <div className="card">{copy.loading}</div>
         </main>
       </div>
     );
@@ -137,83 +147,24 @@ export default function DashboardPage() {
   return (
     <div className="page-shell">
       <header className="topbar">
-        <div className="topbar-inner" style={{ flexDirection: "column", alignItems: "stretch" }}>
-          <div
-            className="row"
-            style={{ justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}
-          >
+        <div className="topbar-inner">
+          <div className="row" style={{ justifyContent: "space-between", width: "100%" }}>
             <div>
-              <div
-                className="brand"
-                style={{
-                  fontSize: "46px",
-                  lineHeight: 1,
-                  letterSpacing: "-0.05em",
-                  marginBottom: "18px",
-                }}
-              >
-                CrewTraxk
+              <div className="brand">CrewTraxk</div>
+              <div className="muted" style={{ marginTop: 6 }}>
+                {copy.loggedInAs} {profile?.email || ""}
               </div>
-
-              <nav className="nav" style={{ gap: "14px" }}>
-                <Link className="nav-link" href="/dashboard">
-                  Dashboard
-                </Link>
-                <Link className="nav-link" href="/jobs">
-                  Jobs
-                </Link>
-                <Link className="nav-link" href="/projects">
-                  Projects
-                </Link>
-                <Link className="nav-link" href="/workers">
-                  Workers
-                </Link>
-                <Link className="nav-link" href="/clock">
-                  Clock In / Out
-                </Link>
-                <Link className="nav-link" href="/reports">
-                  Reports
-                </Link>
-                <Link className="nav-link" href="/invoices">
-                  Invoices
-                </Link>
-                <Link className="nav-link" href="/inspections">
-                  Inspections
-                </Link>
-                <Link className="nav-link" href="/calendar">
-                  Calendar
-                </Link>
-                <Link className="nav-link" href="/time-admin">
-                  Time Admin
-                </Link>
-                <Link className="nav-link" href="/payroll">
-                  Payroll
-                </Link>
-                <Link className="nav-link" href="/live">
-                  Live Crew
-                </Link>
-                <Link className="nav-link" href="/subcontractors">
-                  Subcontractors
-                </Link>
-                <Link className="nav-link" href="/admin">
-                  Admin
-                </Link>
-              </nav>
             </div>
 
-            <div
-              className="row"
-              style={{
-                alignItems: "flex-start",
-                gap: "12px",
-                flexWrap: "wrap",
-                justifyContent: "flex-end",
-              }}
-            >
-              <button className="secondary-button">EN</button>
-              <button className="secondary-button">ES</button>
+            <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+              <Link href="/worker" className="secondary-button">
+                {copy.workerArea}
+              </Link>
+              <Link href="/admin" className="secondary-button">
+                {copy.adminCenter}
+              </Link>
               <button className="secondary-button" onClick={logout}>
-                Logout
+                {copy.logout}
               </button>
             </div>
           </div>
@@ -223,197 +174,127 @@ export default function DashboardPage() {
       <main className="page stack">
         <section className="hero">
           <div className="hero-copy">
-            <h1 className="title">Financial Dashboard</h1>
-            <p className="hero-blurb">
-              Track project value, spending, collected payments, remaining
-              balance, and projected profit in one place.
-            </p>
-            <div className="muted">Logged in as {userEmail}</div>
+            <h1 className="title">
+              {copy.welcome}
+              {profile?.full_name ? `, ${profile.full_name}` : ""}
+            </h1>
+            <p className="hero-blurb">{copy.subtitle}</p>
+
+            <div className="hero-pills">
+              <span className="pill">
+                {copy.roleLabel}: {profile?.role || copy.noRole}
+              </span>
+              <span className="pill">
+                {copy.companyLabel}: {profile?.company_name || copy.noCompany}
+              </span>
+            </div>
           </div>
         </section>
 
         <section className="grid-auto">
           <div className="card metric-card">
-            <div className="metric-label">Active Projects</div>
-            <div className="kpi">{metrics.activeProjects}</div>
-            <div className="metric-subtle">Currently in progress</div>
+            <div className="metric-label">{copy.workers}</div>
+            <div className="kpi">{stats.workers}</div>
+            <div className="metric-subtle">Team accounts</div>
           </div>
 
           <div className="card metric-card">
-            <div className="metric-label">Total Contract Value</div>
-            <div className="kpi">{money(metrics.totalContractValue)}</div>
-            <div className="metric-subtle">Contracts + approved changes</div>
+            <div className="metric-label">{copy.jobs}</div>
+            <div className="kpi">{stats.jobs}</div>
+            <div className="metric-subtle">Jobs in system</div>
           </div>
 
           <div className="card metric-card">
-            <div className="metric-label">Payments Received</div>
-            <div className="kpi">{money(metrics.paymentsReceived)}</div>
-            <div className="metric-subtle">Collected so far</div>
+            <div className="metric-label">{copy.projects}</div>
+            <div className="kpi">{stats.projects}</div>
+            <div className="metric-subtle">Projects tracked</div>
           </div>
 
           <div className="card metric-card">
-            <div className="metric-label">Remaining To Collect</div>
-            <div className="kpi">{money(metrics.remainingToCollect)}</div>
-            <div className="metric-subtle">Outstanding revenue</div>
+            <div className="metric-label">{copy.invoices}</div>
+            <div className="kpi">{stats.invoicesOpen}</div>
+            <div className="metric-subtle">Not paid yet</div>
           </div>
 
           <div className="card metric-card">
-            <div className="metric-label">Material Spend</div>
-            <div className="kpi">{money(metrics.materialSpend)}</div>
-            <div className="metric-subtle">Materials purchased</div>
+            <div className="metric-label">{copy.paymentRequests}</div>
+            <div className="kpi">{stats.paymentRequests}</div>
+            <div className="metric-subtle">Pending review</div>
           </div>
 
           <div className="card metric-card">
-            <div className="metric-label">Labor Spend</div>
-            <div className="kpi">{money(metrics.laborSpend)}</div>
-            <div className="metric-subtle">Crew labor cost</div>
-          </div>
-
-          <div className="card metric-card">
-            <div className="metric-label">Subcontractor Spend</div>
-            <div className="kpi">{money(metrics.subcontractorSpend)}</div>
-            <div className="metric-subtle">Outside labor and subcontractors</div>
-          </div>
-
-          <div className="card metric-card">
-            <div className="metric-label">Misc Spend</div>
-            <div className="kpi">{money(metrics.miscSpend)}</div>
-            <div className="metric-subtle">Other tracked costs</div>
-          </div>
-
-          <div className="card metric-card">
-            <div className="metric-label">Total Spent</div>
-            <div className="kpi">{money(metrics.totalSpent)}</div>
-            <div className="metric-subtle">All tracked spending</div>
-          </div>
-
-          <div className="card metric-card">
-            <div className="metric-label">Projected Profit</div>
-            <div className="kpi">{money(metrics.projectedProfit)}</div>
-            <div className="metric-subtle">Based on current numbers</div>
-          </div>
-
-          <div className="card metric-card">
-            <div className="metric-label">Gross Margin</div>
-            <div className="kpi">{metrics.grossMargin.toFixed(1)}%</div>
-            <div className="metric-subtle">Current project margin</div>
+            <div className="metric-label">{copy.subcontractorIssues}</div>
+            <div className="kpi">{stats.subcontractorIssues}</div>
+            <div className="metric-subtle">Missing W9 / insurance</div>
           </div>
         </section>
 
         <section className="grid-2">
           <div className="card stack">
-            <h2 className="section-title">Quick Links</h2>
+            <h2 className="section-title">{copy.quickActions}</h2>
 
             <div className="link-list">
-              {quickLinks.map((item) => (
-                <Link key={item.href} href={item.href} className="link-tile">
-                  <span>{item.label}</span>
-                  <span className="muted">Open</span>
-                </Link>
-              ))}
+              <Link href="/workers" className="link-tile">
+                <span>{copy.manageWorkers}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/jobs" className="link-tile">
+                <span>{copy.manageJobs}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/projects" className="link-tile">
+                <span>{copy.openProjects}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/invoices" className="link-tile">
+                <span>{copy.reviewInvoices}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/payment-requests" className="link-tile">
+                <span>{copy.paymentApprovals}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/subcontractors" className="link-tile">
+                <span>{copy.subcontractorCompliance}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
             </div>
           </div>
 
           <div className="card stack">
-            <h2 className="section-title">Why CrewTraxk fits here</h2>
+            <h2 className="section-title">{copy.recentSetup}</h2>
 
-            <div className="muted">
-              This is your operations hub. It makes more sense for the product
-              description to live here as a short overview beside your quick
-              actions, instead of floating near the top where the dashboard
-              numbers should stay the focus.
+            <div className="info-block">
+              <strong>{copy.companySetup}</strong>
+              <p>{copy.companySetupText}</p>
             </div>
 
-            <div className="feature-list">
-              <div className="feature-item">
-                <div className="feature-item-title">Subcontractor compliance</div>
-                <div className="muted">
-                  Control W9 and insurance requirements before payment requests
-                  go through.
-                </div>
-              </div>
+            <div className="link-list">
+              <Link href="/admin" className="link-tile">
+                <span>{copy.adminCenter}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
 
-              <div className="feature-item">
-                <div className="feature-item-title">Project visibility</div>
-                <div className="muted">
-                  Stay on top of spending, remaining collections, and profit.
-                </div>
-              </div>
+              <Link href="/payroll" className="link-tile">
+                <span>{copy.payrollArea}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
 
-              <div className="feature-item">
-                <div className="feature-item-title">Operational control</div>
-                <div className="muted">
-                  Keep jobs, crews, and subcontractors organized as the company
-                  grows.
-                </div>
-              </div>
+              <Link href="/reports" className="link-tile">
+                <span>{copy.reportsArea}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
+
+              <Link href="/worker" className="link-tile">
+                <span>{copy.workerArea}</span>
+                <span className="muted">{copy.open}</span>
+              </Link>
             </div>
-          </div>
-        </section>
-
-        <section className="card stack">
-          <h2 className="section-title">Project Financial Summary</h2>
-
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Project</th>
-                  <th>Client</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: "right" }}>Value</th>
-                  <th style={{ textAlign: "right" }}>Received</th>
-                  <th style={{ textAlign: "right" }}>Spent</th>
-                  <th style={{ textAlign: "right" }}>Remaining</th>
-                  <th style={{ textAlign: "right" }}>Profit</th>
-                  <th style={{ textAlign: "right" }}>Margin</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {projects.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="muted">
-                      No project data yet.
-                    </td>
-                  </tr>
-                ) : (
-                  projects.map((project) => (
-                    <tr key={project.id}>
-                      <td>
-                        <Link href={`/projects/${project.id}`}>
-                          <div style={{ fontWeight: 700 }}>{project.name}</div>
-                        </Link>
-                      </td>
-                      <td>{project.client || "-"}</td>
-                      <td>
-                        <span className={badgeClass(project.status)}>
-                          {project.status || "Active"}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {money(project.projectValue)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {money(project.paymentsReceived)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {money(project.totalSpent)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {money(project.remainingToCollect)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {money(project.projectedProfit)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {project.grossMargin.toFixed(1)}%
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
           </div>
         </section>
       </main>

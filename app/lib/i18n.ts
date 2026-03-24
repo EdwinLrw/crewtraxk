@@ -20,6 +20,7 @@ export const messages = {
     login: "Login",
     logout: "Logout",
     projects: "Projects",
+    company: "Company",
 
     loggedInAs: "Logged in as",
     quickLinks: "Quick Links",
@@ -99,6 +100,67 @@ export const messages = {
     inspectionFinal: "Final",
 
     timeEntries: "Time Entries",
+
+    loginHeroTitle: "Run your crew with confidence",
+    loginHeroSubtitle:
+      "Login for daily reports, worker tools, job tracking, payroll-ready time entries, invoices, and inspections.",
+    loginFeature1: "Fast access with Google or secure email login links",
+    loginFeature2: "Admin dashboards for jobs, reports, and crew management",
+    loginFeature3: "Built for field teams, office teams, and subcontractors",
+    loginFormSubtitle:
+      "Sign in with Google or get a secure login link by email.",
+    emailPlaceholder: "name@company.com",
+    sendingLoginLink: "Sending login link...",
+    orContinueWith: "OR CONTINUE WITH",
+    google: "Google",
+    openingGoogle: "Opening Google...",
+    newCompany: "New company?",
+    newCompanyText:
+      "Start with a trial and set up your crew, jobs, and admin access.",
+    startFreeTrial: "Start free trial",
+    enterEmail: "Please enter your email.",
+
+    pricingTitle: "Choose your CrewTraxk plan",
+    pricingSubtitle:
+      "Start your membership and get your crew, jobs, reports, payroll-ready time, invoices, and inspections organized in one place.",
+    starterPlan: "Starter",
+    proPlan: "Pro",
+    businessPlan: "Business",
+    mostPopular: "Most Popular",
+    starterPlanSubtitle: "Best for smaller crews getting set up fast.",
+    proPlanSubtitle: "Best for growing contractors and office teams.",
+    businessPlanSubtitle:
+      "Best for larger operations and more admin control.",
+    startStarter: "Start Starter",
+    startPro: "Start Pro",
+    startBusiness: "Start Business",
+    openingCheckout: "Opening checkout...",
+    upTo10Workers: "Up to 10 workers",
+    upTo30Workers: "Up to 30 workers",
+    upTo100Workers: "Up to 100 workers",
+    jobTracking: "Job tracking",
+    timeTracking: "Time tracking",
+    everythingInStarter: "Everything in Starter",
+    everythingInPro: "Everything in Pro",
+    subcontractorTracking: "Subcontractor tracking",
+    prioritySupport: "Priority support",
+    moreAdminAccess: "More admin access",
+    scaleReadySetup: "Scale-ready setup",
+
+    paymentSuccessful: "Payment successful",
+    subscriptionCompleted:
+      "Your subscription checkout was completed successfully.",
+    almostDone: "You’re almost done",
+    membershipFinalizing:
+      "Your CrewTraxk membership is being finalized. You can now go back and sign in to continue setup.",
+    goToLogin: "Go to login",
+
+    checkoutCanceled: "Checkout canceled",
+    subscriptionNotStarted: "No worries — your subscription was not started.",
+    wantToTryAgain: "Want to try again?",
+    choosePlanAgain:
+      "Go back to pricing and choose the plan that fits your crew best.",
+    backToPricing: "Back to pricing",
   },
 
   es: {
@@ -109,6 +171,9 @@ export const messages = {
     jobs: "Trabajos",
     workers: "Trabajadores",
     clock: "Reloj",
+    clockIn: "Marcar entrada",
+    clockOut: "Marcar salida",
+    clockInOut: "Marcar entrada / salida",
     reports: "Reportes",
     invoices: "Facturas",
     inspections: "Inspecciones",
@@ -117,6 +182,7 @@ export const messages = {
     login: "Iniciar sesión",
     logout: "Cerrar sesión",
     projects: "Proyectos",
+    company: "Empresa",
 
     loggedInAs: "Conectado como",
     quickLinks: "Accesos rápidos",
@@ -154,9 +220,6 @@ export const messages = {
     statusLabel: "Estado",
     clockedOut: "Fuera de horario",
     clockedInOn: "Marcó entrada en",
-    clockIn: "Marcar entrada",
-    clockOut: "Marcar salida",
-    clockInOut: "Marcar entrada / salida",
     clockInTime: "Hora de entrada",
     lastHoursWorked: "Últimas horas trabajadas",
     addWorkerAndJobFirst: "Primero agrega un trabajador y un trabajo.",
@@ -199,6 +262,71 @@ export const messages = {
     inspectionFinal: "Final",
 
     timeEntries: "Registros de tiempo",
+
+    loginHeroTitle: "Administra tu equipo con confianza",
+    loginHeroSubtitle:
+      "Inicia sesión para reportes diarios, herramientas para trabajadores, seguimiento de trabajos, horas listas para nómina, facturas e inspecciones.",
+    loginFeature1: "Acceso rápido con Google o enlaces seguros por correo",
+    loginFeature2:
+      "Paneles administrativos para trabajos, reportes y gestión del equipo",
+    loginFeature3:
+      "Hecho para equipos de campo, oficina y subcontratistas",
+    loginFormSubtitle:
+      "Inicia sesión con Google o recibe un enlace seguro por correo electrónico.",
+    emailPlaceholder: "nombre@empresa.com",
+    sendingLoginLink: "Enviando enlace de acceso...",
+    orContinueWith: "O CONTINUAR CON",
+    google: "Google",
+    openingGoogle: "Abriendo Google...",
+    newCompany: "¿Empresa nueva?",
+    newCompanyText:
+      "Empieza con una prueba y configura tu equipo, trabajos y acceso administrativo.",
+    startFreeTrial: "Comenzar prueba gratis",
+    enterEmail: "Por favor ingresa tu correo electrónico.",
+
+    pricingTitle: "Elige tu plan de CrewTraxk",
+    pricingSubtitle:
+      "Comienza tu membresía y organiza tu equipo, trabajos, reportes, horas listas para nómina, facturas e inspecciones en un solo lugar.",
+    starterPlan: "Starter",
+    proPlan: "Pro",
+    businessPlan: "Business",
+    mostPopular: "Más popular",
+    starterPlanSubtitle:
+      "Ideal para equipos pequeños que quieren empezar rápido.",
+    proPlanSubtitle:
+      "Ideal para contratistas en crecimiento y equipos de oficina.",
+    businessPlanSubtitle:
+      "Ideal para operaciones más grandes y mayor control administrativo.",
+    startStarter: "Empezar Starter",
+    startPro: "Empezar Pro",
+    startBusiness: "Empezar Business",
+    openingCheckout: "Abriendo pago...",
+    upTo10Workers: "Hasta 10 trabajadores",
+    upTo30Workers: "Hasta 30 trabajadores",
+    upTo100Workers: "Hasta 100 trabajadores",
+    jobTracking: "Seguimiento de trabajos",
+    timeTracking: "Seguimiento de horas",
+    everythingInStarter: "Todo lo de Starter",
+    everythingInPro: "Todo lo de Pro",
+    subcontractorTracking: "Seguimiento de subcontratistas",
+    prioritySupport: "Soporte prioritario",
+    moreAdminAccess: "Más acceso administrativo",
+    scaleReadySetup: "Configuración lista para escalar",
+
+    paymentSuccessful: "Pago exitoso",
+    subscriptionCompleted:
+      "Tu pago de suscripción se completó correctamente.",
+    almostDone: "Ya casi terminas",
+    membershipFinalizing:
+      "Tu membresía de CrewTraxk se está finalizando. Ahora puedes volver e iniciar sesión para continuar la configuración.",
+    goToLogin: "Ir al inicio de sesión",
+
+    checkoutCanceled: "Pago cancelado",
+    subscriptionNotStarted: "No te preocupes — tu suscripción no comenzó.",
+    wantToTryAgain: "¿Quieres intentarlo de nuevo?",
+    choosePlanAgain:
+      "Vuelve a precios y elige el plan que mejor se adapte a tu equipo.",
+    backToPricing: "Volver a precios",
   },
 };
 

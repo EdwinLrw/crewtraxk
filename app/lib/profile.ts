@@ -30,9 +30,13 @@ export async function ensureProfile() {
   const payload = {
     id: user.id,
     email: user.email ?? null,
-    full_name: user.user_metadata?.full_name ?? null,
-    role: "worker",
-    company_name: "Crew Traxk",
+    full_name:
+      user.user_metadata?.full_name ??
+      user.user_metadata?.name ??
+      user.user_metadata?.display_name ??
+      null,
+    role: "worker" as AppRole,
+    company_name: null,
   };
 
   const { data, error } = await supabase
