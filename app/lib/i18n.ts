@@ -8,7 +8,8 @@ export const messages = {
     dashboard: "Dashboard",
     jobs: "Jobs",
     workers: "Workers",
-    clockIn: "Clock In ",
+    clock: "Clock",
+    clockIn: "Clock In",
     clockOut: "Clock Out",
     reports: "Reports",
     invoices: "Invoices",
@@ -70,7 +71,6 @@ export const messages = {
     submitReport: "Submit Report",
     dailyReports: "Daily Reports",
     selectAJob: "Select a job.",
-    worker: "Worker",
 
     invoiceType: "Invoice type",
     amount: "Amount",
@@ -170,7 +170,6 @@ export const messages = {
     submitReport: "Enviar reporte",
     dailyReports: "Reportes diarios",
     selectAJob: "Selecciona un trabajo.",
-    worker: "Trabajador",
 
     invoiceType: "Tipo de factura",
     amount: "Monto",
