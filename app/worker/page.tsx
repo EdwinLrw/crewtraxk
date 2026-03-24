@@ -78,7 +78,7 @@ export default function WorkerPage() {
       <div className="grid-2">
         {canUseClock("worker") && (
           <Link href="/clock" className="card">
-            {t.clockInOut}
+            {t.clockIn}
           </Link>
         )}
 
