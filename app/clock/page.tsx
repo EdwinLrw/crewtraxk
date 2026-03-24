@@ -185,7 +185,7 @@ export default function ClockPage() {
 
   return (
     <main className="stack">
-      <h1 className="title">{t.clock}</h1>
+      <h1 className="title">{t.clockIn}</h1>
 
       <div className="card stack">
         <div className="grid-2">
