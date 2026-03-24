@@ -1,4 +1,4 @@
-import { supabase } from "@/app/lib/supabase";
+import { supabase } from "./supabase";
 
 /* ---------------- PROJECTS ---------------- */
 
@@ -9,7 +9,7 @@ export async function getProjects() {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function addProject(payload: {
@@ -74,7 +74,7 @@ export async function getProjectPayments(projectId: string) {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function getProjectMaterials(projectId: string) {
@@ -85,7 +85,7 @@ export async function getProjectMaterials(projectId: string) {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function getProjectTimeEntries(projectId: string) {
@@ -96,7 +96,7 @@ export async function getProjectTimeEntries(projectId: string) {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function addProjectPayment(payload: {
@@ -150,17 +150,17 @@ export async function getFinancialDashboardMetrics() {
   if (materialsRes.error) throw materialsRes.error;
   if (timeEntriesRes.error) throw timeEntriesRes.error;
 
-  const projects = projectsRes.data ?? [];
-  const payments = paymentsRes.data ?? [];
-  const materials = materialsRes.data ?? [];
-  const timeEntries = timeEntriesRes.data ?? [];
+  const projects = (projectsRes.data ?? []) as any[];
+  const payments = (paymentsRes.data ?? []) as any[];
+  const materials = (materialsRes.data ?? []) as any[];
+  const timeEntries = (timeEntriesRes.data ?? []) as any[];
 
   const activeProjects = projects.filter(
-    (p) => (p.status ?? "Active") !== "Completed"
+    (p: any) => (p.status ?? "Active") !== "Completed"
   ).length;
 
   const totalContractValue = projects.reduce(
-    (sum, p) =>
+    (sum: number, p: any) =>
       sum +
       Number(p.contract_value || 0) +
       Number(p.approved_change_orders || 0),
@@ -168,27 +168,27 @@ export async function getFinancialDashboardMetrics() {
   );
 
   const paymentsReceived = payments.reduce(
-    (sum, p) => sum + Number(p.amount || 0),
+    (sum: number, p: any) => sum + Number(p.amount || 0),
     0
   );
 
   const materialSpend = materials.reduce(
-    (sum, m) => sum + Number(m.total_cost || 0),
+    (sum: number, m: any) => sum + Number(m.total_cost || 0),
     0
   );
 
   const laborSpend = timeEntries.reduce(
-    (sum, t) => sum + Number(t.labor_cost || 0),
+    (sum: number, t: any) => sum + Number(t.labor_cost || 0),
     0
   );
 
   const subcontractorSpend = projects.reduce(
-    (sum, p) => sum + Number(p.subcontractor_spent || 0),
+    (sum: number, p: any) => sum + Number(p.subcontractor_spent || 0),
     0
   );
 
   const miscSpend = projects.reduce(
-    (sum, p) => sum + Number(p.misc_spent || 0),
+    (sum: number, p: any) => sum + Number(p.misc_spent || 0),
     0
   );
 
@@ -232,34 +232,38 @@ export async function getProjectFinancialRows() {
   if (materialsRes.error) throw materialsRes.error;
   if (timeEntriesRes.error) throw timeEntriesRes.error;
 
-  const projects = projectsRes.data ?? [];
-  const payments = paymentsRes.data ?? [];
-  const materials = materialsRes.data ?? [];
-  const timeEntries = timeEntriesRes.data ?? [];
+  const projects = (projectsRes.data ?? []) as any[];
+  const payments = (paymentsRes.data ?? []) as any[];
+  const materials = (materialsRes.data ?? []) as any[];
+  const timeEntries = (timeEntriesRes.data ?? []) as any[];
 
-  return projects.map((project) => {
-    const projectPayments = payments.filter((p) => p.project_id === project.id);
-    const projectMaterials = materials.filter(
-      (m) => m.project_id === project.id
+  return projects.map((project: any) => {
+    const projectPayments = payments.filter(
+      (p: any) => p.project_id === project.id
     );
-    const projectTime = timeEntries.filter((t) => t.job_id === project.id);
+    const projectMaterials = materials.filter(
+      (m: any) => m.project_id === project.id
+    );
+    const projectTime = timeEntries.filter(
+      (t: any) => t.job_id === project.id
+    );
 
     const projectValue =
       Number(project.contract_value || 0) +
       Number(project.approved_change_orders || 0);
 
     const paymentsReceived = projectPayments.reduce(
-      (sum, p) => sum + Number(p.amount || 0),
+      (sum: number, p: any) => sum + Number(p.amount || 0),
       0
     );
 
     const materialsSpent = projectMaterials.reduce(
-      (sum, m) => sum + Number(m.total_cost || 0),
+      (sum: number, m: any) => sum + Number(m.total_cost || 0),
       0
     );
 
     const laborSpent = projectTime.reduce(
-      (sum, t) => sum + Number(t.labor_cost || 0),
+      (sum: number, t: any) => sum + Number(t.labor_cost || 0),
       0
     );
 
@@ -302,7 +306,7 @@ export async function getLiveClockedInWorkers() {
     .order("clock_in", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function getPayrollSummary() {
@@ -318,7 +322,7 @@ export async function getPayrollSummary() {
     { hours: number; labor: number; shifts: number }
   > = {};
 
-  for (const row of data ?? []) {
+  for (const row of ((data ?? []) as any[])) {
     const key = row.worker_name || "Unknown";
 
     if (!grouped[key]) {
@@ -330,12 +334,27 @@ export async function getPayrollSummary() {
     grouped[key].shifts += 1;
   }
 
-  return Object.entries(grouped).map(([workerName, val]) => ({
-    workerName,
-    totalHours: val.hours,
-    totalLabor: val.labor,
-    shifts: val.shifts,
-  }));
+  return Object.entries(grouped).map(
+    ([workerName, val]: [
+      string,
+      { hours: number; labor: number; shifts: number }
+    ]) => ({
+      workerName,
+      totalHours: val.hours,
+      totalLabor: val.labor,
+      shifts: val.shifts,
+    })
+  );
+}
+
+export async function getWorkers() {
+  const { data, error } = await supabase
+    .from("workers")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as any[];
 }
 
 /* ---------------- WORKER ASSIGNMENTS ---------------- */
@@ -361,7 +380,7 @@ export async function getProjectAssignments(projectId: string) {
     .eq("project_id", projectId);
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 /* ---------------- SUBCONTRACTORS ---------------- */
@@ -380,7 +399,7 @@ export async function getSubcontractors() {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function addSubcontractor(payload: {
@@ -439,7 +458,7 @@ export async function getSubcontractorAssignments(projectId: string) {
     .eq("project_id", projectId);
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 /* ---------------- SUB PORTAL ---------------- */
@@ -464,7 +483,7 @@ export async function getAssignmentsForSubcontractor(subcontractorId: string) {
     .eq("subcontractor_id", subcontractorId);
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 /* ---------------- SUB PAYMENT REQUESTS ---------------- */
@@ -497,7 +516,7 @@ export async function getPaymentRequestsForSubcontractor(
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 /* ---------------- SCHEDULE ---------------- */
@@ -509,7 +528,7 @@ export async function getScheduleEvents() {
     .order("start_date", { ascending: true });
 
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as any[];
 }
 
 export async function addScheduleEvent(payload: {
