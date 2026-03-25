@@ -13,6 +13,13 @@ const PLAN_TO_PRICE: Record<string, string | undefined> = {
 
 export async function POST(request: Request) {
   try {
+    console.log("ENV CHECK:", {
+      key: !!process.env.STRIPE_SECRET_KEY,
+      starter: process.env.STRIPE_PRICE_STARTER,
+      pro: process.env.STRIPE_PRICE_PRO,
+      business: process.env.STRIPE_PRICE_BUSINESS,
+    });
+
     const body = await request.json();
     const plan = body?.plan;
 
@@ -20,13 +27,6 @@ export async function POST(request: Request) {
       return Response.json(
         { error: "Invalid plan selected." },
         { status: 400 }
-      );
-    }
-
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return Response.json(
-        { error: "Missing STRIPE_SECRET_KEY in environment variables." },
-        { status: 500 }
       );
     }
 
@@ -44,11 +44,11 @@ export async function POST(request: Request) {
     });
 
     return Response.json({ url: session.url });
-  } catch (error) {
-    console.error("Stripe checkout error:", error);
+  } catch (error: any) {
+    console.error("🔥 Stripe checkout error FULL:", error);
 
     return Response.json(
-      { error: "Unable to create checkout session." },
+      { error: error.message || "Unable to create checkout session." },
       { status: 500 }
     );
   }
